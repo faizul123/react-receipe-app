@@ -7,12 +7,12 @@ export default class LeftPane extends Component{
         return(<Paper>
                 <List component="nav">
                    { this.props.category.map((cuisine) => {
-                       const id = cuisine.trim().replace('/ /g','-');
+                       const id = cuisine.trim().replace("/ /g",'-');
                        const isSelected = this.props.selectedCategory === id ? true:false;
                        console.log(isSelected)
                        return( <ListItem 
                                     selected={isSelected}
-                                    key={cuisine.trim().replace('/ /g','-')} 
+                                    key={cuisine.trim().replace("/ /g",'-')} 
                                     button 
                                     style={{"cursor":"pointer"}}
                                     onClick={() => this.props.onCategorySelect(id)}>
