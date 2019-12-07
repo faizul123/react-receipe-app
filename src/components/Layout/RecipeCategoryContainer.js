@@ -1,77 +1,95 @@
-import React, { Fragment,Component } from 'react'
-import { Grid } from '@material-ui/core'
+import React, { Fragment, Component } from 'react'
+import { Grid, List, ListItem, ListItemText, LinearProgress } from '@material-ui/core'
 import LeftPane from './LeftPane'
-import RightPane from './RightPane'
+import { RightPane } from './RightPane'
+import ReceipeCardContainer from '../RecipeCard/ReceipeCardContainer';
 
 const styles = {
-    reciepeCategory:{
-        marginTop:"72px",
-        marginLeft:"8px",
+    reciepeCategory: {
+        marginTop: "72px",
+        marginLeft: "8px",
     }
 }
 
+class ReciepeCategoryContainer extends Component {
 
-export default class ReciepeCategoryContainer extends Component{
-
-    constructor(props){
+    constructor(props) {
         super(props);
         this.state = {
-            selectedCategory:"none",
-            foodItems:props.foodItems
+            selectedCategory: "none",
+            foodItems: props.foodItems,
+            loaded:false
         };
     }
 
     handleCategorySelect = (categoryId) => {
-        debugger;
-        console.log(this.state);
         this.setState({
-            selectedCategory:categoryId
-        },this.updateFoodItems);
+            selectedCategory: categoryId
+        }, this.updateFoodItems);
     }
 
-     updateFoodItems = () => {
-        console.log("updateFoodItems")
-        if(this.state.selectedCategory !== 'none'){
-            fetch("https://api.spoonacular.com/recipes/search?cuisine=" + this.state.selectedCategory 
-            + "&apiKey=cdca194d2c1b44f6ba48a56aa8e8f016")
-            .then(response => {
-                return response.json()
-            }).then(data => {
-                this.setState({
-                    foodItems:data.results,
-                    totalFoods:data.totalResults
-                })
-                console.log(data)
-            });
+    updateFoodItems = () => {
+        if (this.state.selectedCategory !== 'none') {
+            fetch("https://api.spoonacular.com/recipes/search?cuisine=" + this.state.selectedCategory
+                + "&apiKey=cdca194d2c1b44f6ba48a56aa8e8f016")
+                .then(response => {
+                    return response.json()
+                }).then(data => {
+                    this.setState({
+                        foodItems: data.results,
+                        totalFoods: data.totalResults,
+                        loaded:true
+                    })
+                });
         }
     }
 
-    render(){
-        console.log("state ",this.state);
-        return(<Fragment>
-            {!this.props.rightPane &&
+    render() {
+        console.log(" from recipecategorycontainer state ", this.state, " props ", this.props);
+        return (<Fragment>            
             <Grid container style={styles.reciepeCategory} >
                 <Grid item sm={3}>
-                     <LeftPane 
-                     category={this.props.category}
-                     total={this.state.totalFoods || 0}
-                     selectedCategory={this.state.selectedCategory || "none"} 
-                     onCategorySelect={this.handleCategorySelect} />
+                    <LeftPane>
+                        <CuisineMenus
+                            onCategorySelect={this.handleCategorySelect}
+                            selectedCategory={this.state.selectedCategory}
+                            total={this.state.totalFoods}
+                            {...this.props} />
+                    </LeftPane>
                 </Grid>
                 <Grid item sm={9}>
-                    <RightPane foodItems={this.state.foodItems} />
+                    <RightPane>
+                    { (!this.state.loaded) && <LinearProgress variant="query"/> }
+                        <ReceipeCardContainer
+                            notifyUser={this.props.notifyUser}
+                            foodItems={this.state.foodItems}
+                        />
+                    </RightPane>
                 </Grid>
             </Grid>
-    }
-            {
-                (this.props.rightPane) && 
-                <Grid container style={styles.reciepeCategory} justify="center" >
-                    <Grid item sm={9}>
-                        <RightPane foodItems={this.props.foodItems} />
-                    </Grid>
-            </Grid>
-            }
         </Fragment>);
     }
 
 }
+
+const CuisineMenus = (props) => {
+    return (<List component="nav">
+        {props.category.map((cuisine) => {
+            const id = cuisine.trim().replace(/ /g, '-');
+            const isSelected = props.selectedCategory === id ? true : false;
+            return (<ListItem
+                selected={isSelected}
+                key={id}
+                button
+                style={{ "cursor": "pointer" }}
+                onClick={() => props.onCategorySelect(id)}>
+                <ListItemText primary={cuisine} secondary={isSelected && props.total !== 0 ? `${props.total} total foods found` : ""}>
+                </ListItemText>
+            </ListItem>
+            );
+        })
+        }
+    </List>);
+}
+
+export default ReciepeCategoryContainer;

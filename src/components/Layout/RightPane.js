@@ -1,7 +1,5 @@
-import React,{Component} from 'react'
+import React from 'react'
 import { Paper } from '@material-ui/core'
-import RecipeCard from '../RecipeCard';
-
 const styles={
     rightPane:{
         marginLeft:"8px",
@@ -11,21 +9,10 @@ const styles={
     }
 }
 
-export default class RightPane extends Component{
-
-    render(){
-        console.log(this.props.foodItems)
-        return(
+export  const RightPane = (props) => {
+    return(
         <Paper style={styles.rightPane}>
-            {
-                this.props.foodItems.map(item => {
-                    return (
-                        <RecipeCard key={item.id} receipe={item} />
-                    );
-                })
-            }
+           {props.children}
         </Paper>
         );
-    }
-
 }
